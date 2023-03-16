@@ -231,30 +231,21 @@ def fit_evaluation_models(n_neighbors_lof, n_neighbors_nn, training_data):
     return lof_estimator, nn_model
 
 
-def evaluate(
-    X_pred_neg,
-    cf_samples,
-    pred_labels,
-    cf_labels,
-    lof_estimator_pos,
-    lof_estimator_neg,
-    nn_estimator_pos,
-    nn_estimator_neg,
-):
-    proxi = euclidean_distance(X_pred_neg, cf_samples)
-    valid = validity_score(pred_labels, cf_labels)
-    compact = compactness_score(X_pred_neg, cf_samples)
+def evaluate(X_pred_neg, best_cf_samples, z_pred, n_timesteps, tree, maximum_distance=1):
+    proxi = euclidean_distance(X_pred_neg, best_cf_samples)
+    valid = validity_score(z_pred)
+    # compact = compactness_score(X_pred_neg, best_cf_samples, n_timesteps=n_timesteps)
+    cost_mean, cost_std = cost_score(z_pred)
+    
+    # neigh_count = neighbour_counts_within_radius(best_cf_samples.reshape(-1, n_timesteps), tree, radius=0.3*maximum_distance)
+    # dist_knn = distance_knn(best_cf_samples.reshape(-1, n_timesteps), tree) 
 
-    # TODO: add LOF and RP score for debugging training?
-    lof_score = calculate_lof(
-        cf_samples, pred_labels, lof_estimator_pos, lof_estimator_neg
-    )
-    rp_score = relative_proximity(
-        X_pred_neg, cf_samples, pred_labels, nn_estimator_pos, nn_estimator_neg
-    )
+    # return proxi, valid, compact, cost_mean, cost_std, neigh_count, dist_knn     # exclude unused metrics in the final evaluation
+    return proxi, valid, cost_mean, cost_std
 
-    return proxi, valid, lof_score, rp_score, compact
-
+def cost_score(cf_probs, decision_prob=0.5):
+    diff = cf_probs - decision_prob
+    return np.mean(diff), np.std(diff)
 
 def euclidean_distance(X, cf_samples, average=True):
     paired_distances = np.linalg.norm(X - cf_samples, axis=1)
@@ -265,6 +256,27 @@ def validity_score(pred_labels, cf_labels):
     desired_labels = 1 - pred_labels  # for binary classification
     return accuracy_score(y_true=desired_labels, y_pred=cf_labels)
 
+def find_best_alpha(autoencoder, classifier, X_samples, alpha_list=[0.001, 0.0001]):
+    # Find the best alpha for vanilla LatentCF
+    best_cf_model, best_cf_samples = None, None
+    best_losses, best_valid_frac, best_alpha = 0, -1, 0
+    
+    for alp in alpha_list:
+        # Fit the LatentCF model
+        cf_model = LatentCF(probability=0.5, alpha=alp, autoencoder=autoencoder)
+        cf_model.fit(classifier)
+
+        cf_samples, losses = cf_model.transform(X_samples)
+        z_pred = classifier.predict(cf_samples) # predicted probabilities of CFs
+
+        print(f'alpha={alp} finished.')
+        valid_frac = validity_score(z_pred)
+
+        if valid_frac >= best_valid_frac:
+            best_cf_model, best_cf_samples = cf_model, cf_samples
+            best_losses, best_alpha, best_valid_frac = losses, alp, valid_frac
+    
+    return best_alpha, best_cf_model, best_cf_samples
 
 # originally from: https://github.com/isaksamsten/wildboar/blob/859758884677ba32a601c53a5e2b9203a644aa9c/src/wildboar/metrics/_counterfactual.py#L279
 def compactness_score(X, cf_samples):
