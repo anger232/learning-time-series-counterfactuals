@@ -8,7 +8,6 @@ import pandas as pd
 import tensorflow as tf
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.utils import resample, shuffle
-from sklearn.metrics import accuracy_score
 from sklearn.neighbors import LocalOutlierFactor, NearestNeighbors
 
 # from _composite import ModifiedLatentCF
