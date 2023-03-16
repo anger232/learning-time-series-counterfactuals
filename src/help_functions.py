@@ -252,7 +252,7 @@ def euclidean_distance(X, cf_samples, average=True):
     return np.mean(paired_distances) if average else paired_distances
 
 
-def validity_score(pred_labels, cf_labels):
+def validity_score(pred_labels, cf_labels=0.5):
     desired_labels = 1 - pred_labels  # for binary classification
     return accuracy_score(y_true=desired_labels, y_pred=cf_labels)
 
