@@ -251,10 +251,11 @@ def euclidean_distance(X, cf_samples, average=True):
     paired_distances = np.linalg.norm(X - cf_samples, axis=1)
     return np.mean(paired_distances) if average else paired_distances
 
+def validity_score(cf_probs, decision_prob=0.5):
+    valid_counts = np.sum(cf_probs >= decision_prob)
+    total_counts = len(cf_probs)
 
-def validity_score(pred_labels, cf_labels=0.5):
-    desired_labels = 1 - pred_labels  # for binary classification
-    return accuracy_score(y_true=desired_labels, y_pred=cf_labels)
+    return valid_counts/total_counts
 
 def find_best_alpha(autoencoder, classifier, X_samples, alpha_list=[0.001, 0.0001]):
     # Find the best alpha for vanilla LatentCF
