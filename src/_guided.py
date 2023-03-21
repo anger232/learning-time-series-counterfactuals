@@ -339,7 +339,7 @@ def get_global_weights(
 
     clf = ModelWrapper(classifier_model)
 
-    i = IntervalImportance(scoring="accuracy", n_interval=10, random_state=random_state)
+    i = IntervalImportance(scoring="accuracy", n_intervals=10, random_state=random_state)
     i.fit(clf, input_samples.reshape(input_samples.shape[0], -1), input_labels)
 
     # calculate the threshold of masking, 75 percentile
