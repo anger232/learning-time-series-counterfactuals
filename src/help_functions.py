@@ -29,25 +29,21 @@ class ResultWriter:
             writer.writerow(
                 [
                     "dataset",
-                    "fold_id",
                     "method",
                     "classifier_accuracy",
                     "autoencoder_loss",
                     "best_lr",
                     "proximity",
                     "validity",
-                    "lof_score",
-                    "relative_proximity",
-                    "compactness",
+                    "margin_mean",
+                    "margin_std",
                     "pred_margin_weight",
                     "step_weight_type",
-                    "threshold_tau",
                 ]
             )
 
     def write_result(
         self,
-        fold_id,
         method_name,
         acc,
         ae_loss,
@@ -55,14 +51,12 @@ class ResultWriter:
         evaluate_res,
         pred_margin_weight=1.0,
         step_weight_type="",
-        threshold_tau=0.5,
     ):
         (
             proxi,
             valid,
-            lof_score,
-            relative_proximity,
-            compactness,
+            cost_mean,
+            cost_std,
         ) = evaluate_res
 
         with open(self.file_name, "a") as f:
@@ -70,19 +64,16 @@ class ResultWriter:
             writer.writerow(
                 [
                     self.dataset_name,
-                    fold_id,
                     method_name,
                     acc,
                     ae_loss,
                     best_lr,
                     proxi,
                     valid,
-                    lof_score,
-                    relative_proximity,
-                    compactness,
+                    cost_mean,
+                    cost_std,
                     pred_margin_weight,
                     step_weight_type,
-                    threshold_tau,
                 ]
             )
 
