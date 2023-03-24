@@ -230,7 +230,7 @@ def fit_evaluation_models(n_neighbors_lof, n_neighbors_nn, training_data):
     return lof_estimator, nn_model
 
 
-def evaluate(X_pred_neg, best_cf_samples, z_pred, n_timesteps, tree, maximum_distance=1):
+def evaluate(X_pred_neg, best_cf_samples, z_pred, n_timesteps, maximum_distance=1):
     proxi = euclidean_distance(X_pred_neg, best_cf_samples)
     valid = validity_score(z_pred)
     # compact = compactness_score(X_pred_neg, best_cf_samples, n_timesteps=n_timesteps)
